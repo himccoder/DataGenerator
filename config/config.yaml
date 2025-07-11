@@ -1,0 +1,92 @@
+# Calendar Data Generation Configuration
+
+# API Configuration
+api:
+  openai:
+    model: "gpt-3.5-turbo"
+    max_tokens: 1000
+    temperature: 0.7
+  
+  deepseek:
+    base_url: "https://api.deepseek.com/v1"
+    model: "deepseek-chat"
+    max_tokens: 1000
+    temperature: 0.7
+
+# Database Configuration
+database:
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+    decode_responses: true
+
+# Data Generation Settings
+generation:
+  users:
+    count: 5
+    batch_size: 10
+  
+  events:
+    count_per_user: "2-3"  # Range of events per user
+    batch_size: 20
+    
+  output:
+    format: ["json", "csv"]  # Export formats
+    directory: "data/generated"
+
+# LLM Prompts
+prompts:
+  user_generation: |
+    Generate realistic user profiles for a calendar application. Return a JSON array with this structure:
+    [
+      {
+        "name": "Full Name",
+        "email": "email@domain.com",
+        "timezone": "America/New_York",
+        "profession": "Job Title",
+        "preferences": {
+          "working_hours": {"start": "09:00", "end": "17:00"},
+          "meeting_duration_preference": "30-60 minutes",
+          "calendar_view": "week"
+        }
+      }
+    ]
+    
+    CRITICAL: 
+    - Return ONLY a valid JSON array starting with [ and ending with ]
+    - Generate the EXACT number of users requested
+    - Make each profile unique and diverse
+    - No explanations, no markdown, no extra text
+
+  event_generation: |
+    Generate exactly {count} realistic calendar events for this user. User details:
+    - Name: {user_name}
+    - Profession: {profession}
+    - Timezone: {timezone}
+    - Working Hours: {working_hours}
+    
+    CRITICAL: Return ONLY a valid JSON array. No explanations, no markdown, no extra text.
+    
+    JSON format (must be exactly this structure):
+    [
+      {{
+        "title": "Meeting Title",
+        "description": "Brief description of the event",
+        "start_time": "2024-12-26T10:00:00",
+        "end_time": "2024-12-26T11:00:00",
+        "location": "Office Room 101",
+        "attendees": ["colleague@company.com"],
+        "category": "meeting",
+        "priority": "medium",
+        "recurrence": null
+      }}
+    ]
+    
+    Requirements:
+    - Use category values: "meeting", "appointment", "personal", or "work"
+    - Use priority values: "high", "medium", or "low"
+    - Use realistic times within working hours
+    - Start with [ and end with ]
+    - No trailing commas 
